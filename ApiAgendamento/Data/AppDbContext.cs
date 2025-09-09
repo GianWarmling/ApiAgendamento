@@ -12,6 +12,7 @@ namespace ApiAgendamento.Data
         public DbSet<Agendamento>Agendamentos { get; set; }
         public DbSet<Usuario>Usuarios { get; set; }
         public DbSet<Quadra>Quadras { get; set; }
+        public DbSet<Pagamento> Pagamentos { get; set; }
 
     }
 }
