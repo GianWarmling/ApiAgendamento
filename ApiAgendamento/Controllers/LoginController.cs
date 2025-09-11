@@ -45,7 +45,7 @@ namespace ApiAgendamento.Controllers
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(issuer: null,
+            var token = new JwtSecurityToken(issuer: "minhaApi",
                                              audience: null,
                                              claims: claims,
                                              expires: DateTime.UtcNow.AddHours(4),

@@ -1,19 +1,25 @@
 ﻿using ApiAgendamento.Data;
 using ApiAgendamento.Models;
+using ApiAgendamento.Models.DTO;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ApiAgendamento.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    [Route("api/[controller]")]
     public class PagamentoController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public PagamentoController(AppDbContext context) 
+        private readonly IMapper _mapper;
+        public PagamentoController(AppDbContext context, IMapper mapper) 
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/<PagamentoController>
@@ -32,9 +38,11 @@ namespace ApiAgendamento.Controllers
 
         // POST api/<PagamentoController>
         [HttpPost]
-        public IActionResult Post([FromBody] Pagamento novoPagamento)
+        public IActionResult Post([FromBody] PagamentoDTO novoPagamento)
         {
-            _context.Pagamentos.Add(novoPagamento);
+            Pagamento pagamento = new Pagamento();
+            _mapper.Map(novoPagamento, pagamento);
+            _context.Pagamentos.Add(pagamento);
             _context.SaveChanges();
             return Created("/pagamento", novoPagamento);
         }

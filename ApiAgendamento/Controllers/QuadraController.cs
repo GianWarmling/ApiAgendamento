@@ -1,5 +1,8 @@
 ﻿using ApiAgendamento.Data;
 using ApiAgendamento.Models;
+using ApiAgendamento.Models.DTO;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,14 +10,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiAgendamento.Controllers
 {
-    [Route("api/[controller]")]
+    //[Authorize]
     [ApiController]
+    [Route("api/[controller]")]
     public class QuadraController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public QuadraController(AppDbContext context) 
+        private readonly IMapper _mapper;
+        public QuadraController(AppDbContext context, IMapper mapper) 
         {
             _context = context;
+            _mapper = mapper;
         }
         // GET: api/<QuadraController>
         [HttpGet]
@@ -41,14 +47,31 @@ namespace ApiAgendamento.Controllers
 
         // PUT api/<QuadraController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Put([FromRoute] int id, [FromBody] QuadraDTO quadraAtualizada)
         {
+            var quadra = _context.Quadras.FirstOrDefault(q => q.Id == id);
+            if (quadra == null)
+            {
+                return BadRequest("Quadra não existe!");
+            }
+            _mapper.Map(quadraAtualizada, quadra);
+            _context.Update(quadra);
+            _context.SaveChanges();
+            return Ok("Quadra atualizada com sucesso!");
         }
 
         // DELETE api/<QuadraController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete([FromRoute]int id)
         {
+            var quadra = _context.Quadras.FirstOrDefault(q => q.Id == id);
+            if (quadra is null)
+            {
+                return BadRequest("Quadra não existe!");
+            }
+            _context.Remove(quadra);
+            _context.SaveChanges();
+            return Ok("Quadra removida com sucesso!");
         }
     }
 }
