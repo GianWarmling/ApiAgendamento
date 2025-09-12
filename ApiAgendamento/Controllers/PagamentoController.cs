@@ -49,14 +49,31 @@ namespace ApiAgendamento.Controllers
 
         // PUT api/<PagamentoController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Put([FromRoute]int id, [FromBody] PagamentoDTO pagamentoAtualizado)
         {
+            var pagamento = _context.Pagamentos.FirstOrDefault(p => p.Id == id);
+            if (pagamento == null)
+            {
+                return BadRequest("Pagamento não encontrado!");
+            }
+            _mapper.Map(pagamentoAtualizado, pagamento);
+            _context.Update(pagamento);
+            _context.SaveChanges();
+            return Ok("Pagamento atualizado com sucesso!");
         }
 
         // DELETE api/<PagamentoController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            var pagamento = _context.Pagamentos.FirstOrDefault(p => p.Id == id);
+            if (pagamento == null)
+            {
+                return BadRequest("Pagamento não encontrado!");
+            }
+            _context.Remove(pagamento);
+            _context.SaveChanges();
+            return Ok("Pagamento removido com sucesso!");
         }
     }
 }

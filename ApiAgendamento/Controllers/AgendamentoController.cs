@@ -1,5 +1,7 @@
 ﻿using ApiAgendamento.Data;
+using ApiAgendamento.Models;
 using ApiAgendamento.Models.DTO;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,9 +15,11 @@ namespace ApiAgendamento.Controllers
     public class AgendamentoController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public AgendamentoController(AppDbContext context)
+        private readonly IMapper _mapper;
+        public AgendamentoController(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         // GET: api/<AgendamentoController>
         [HttpGet]
@@ -35,29 +39,40 @@ namespace ApiAgendamento.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] AgendamentoDto novoAgendamento)
         {
-            _context.Agendamentos.Add(new Models.Agendamento()
-            {
-                DataHoraInicio = novoAgendamento.DataHoraInicio,
-                DataHoraFim = novoAgendamento.DataHoraFim,
-                ValorTotal = novoAgendamento.ValorTotal,
-                Status = novoAgendamento.Status,
-                UsuarioId = novoAgendamento.UsuarioId,
-                QuadraId = novoAgendamento.QuadraId
-            });
+            Agendamento agendamento = new Agendamento();
+            _mapper.Map(novoAgendamento, agendamento);
+            _context.Agendamentos.Add(agendamento);
             _context.SaveChanges();
             return Created("/agendamento", novoAgendamento);
         }
 
         // PUT api/<AgendamentoController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Put([FromRoute] int id, [FromBody] AgendamentoDto agendamentoAtualizado)
         {
+            var agendamento = _context.Agendamentos.FirstOrDefault(a => a.Id == id);
+            if (agendamento == null)
+            {
+                return BadRequest("Agendamento não encontrado!");
+            }
+            _mapper.Map(agendamentoAtualizado, agendamento);
+            _context.Update(agendamento);
+            _context.SaveChanges();
+            return Ok("Agendamento atualizado com sucesso!");
         }
 
         // DELETE api/<AgendamentoController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            var agendamento = _context.Agendamentos.FirstOrDefault(a => a.Id == id);
+            if (agendamento == null)
+            {
+                return BadRequest("Agendamento não encontrado!");
+            }
+            _context.Remove(agendamento);
+            _context.SaveChanges();
+            return Ok("Agendamento removido com sucesso!");
         }
     }
 }

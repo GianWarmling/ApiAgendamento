@@ -63,8 +63,16 @@ namespace ApiAgendamento.Controllers
 
         // PUT api/<UsuarioController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Put([FromRoute] int id, [FromBody] Usuario usuarioAtualizado)
         {
+            var usuario = _context.Usuarios.FirstOrDefault(u => u.Id == id);
+            if (usuario == null)
+            {
+                return BadRequest("Usuário não encontrado!");
+            }
+            _context.Update(usuario);
+            _context.SaveChanges();
+            return Ok("Usuário atualizado com sucesso!");
         }
 
         // DELETE api/<UsuarioController>/5
