@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiAgendamento.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class AgendamentoController : ControllerBase
@@ -39,11 +39,41 @@ namespace ApiAgendamento.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] AgendamentoDto novoAgendamento)
         {
+            var existeAgendamento = _context.Agendamentos
+                .FirstOrDefault(a =>
+                // Condições de sobreposição de horário
+                novoAgendamento.DataHoraInicio < a.DataHoraFim &&
+                novoAgendamento.DataHoraFim > a.DataHoraInicio &&
+
+                // Filtros adicionais
+                a.QuadraId == novoAgendamento.QuadraId &&
+                a.Status != StatusAgendamento.CANCELADO &&
+                a.Status != StatusAgendamento.RECUSADO
+);
+            if (existeAgendamento is not null)
+            {
+                return BadRequest("Já existe um agendamento nesse horário para essa quadra!");
+            }
+            //FAZER CALCULO DE TOTAL DE HORAS
+            TimeSpan diferenca = novoAgendamento.DataHoraFim - novoAgendamento.DataHoraInicio;
+            var valorTotal = (decimal)diferenca.TotalHours * 100;
+
             Agendamento agendamento = new Agendamento();
             _mapper.Map(novoAgendamento, agendamento);
+            agendamento.ValorTotal = valorTotal;
+            agendamento.Status = StatusAgendamento.PENDENTE;
             _context.Agendamentos.Add(agendamento);
             _context.SaveChanges();
-            return Created("/agendamento", novoAgendamento);
+            Pagamento pagamento = new Pagamento()
+            {
+                AgendamentoId = agendamento.Id,
+                Status = StatusPagamento.PENDENTE,
+                Valor = valorTotal,
+                MetodoPagamento = novoAgendamento.MetodoPagamento
+            };
+            _context.Pagamentos.Add(pagamento);
+            _context.SaveChanges();
+            return Created("/agendamento", agendamento);
         }
 
         // PUT api/<AgendamentoController>/5

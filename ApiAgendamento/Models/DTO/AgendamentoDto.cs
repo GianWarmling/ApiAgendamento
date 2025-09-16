@@ -7,8 +7,7 @@ namespace ApiAgendamento.Models.DTO
     {
         public DateTime DataHoraInicio { get; set; }
         public DateTime DataHoraFim { get; set; }
-        public decimal ValorTotal { get; set; }
-        public string Status { get; set; } // Ex: "Confirmado", "Cancelado", "Pendente"
+        public string MetodoPagamento { get; set; }
 
         // Relacionamentos com outras classes
         public int UsuarioId { get; set; }

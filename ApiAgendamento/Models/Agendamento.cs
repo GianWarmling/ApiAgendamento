@@ -11,7 +11,7 @@ namespace ApiAgendamento.Models
         public DateTime DataHoraInicio { get; set; }
         public DateTime DataHoraFim { get; set; }
         public decimal ValorTotal { get; set; }
-        public string Status { get; set; } // Ex: "Confirmado", "Cancelado", "Pendente"
+        public StatusAgendamento Status { get; set; } // Ex: "Confirmado", "Cancelado", "Pendente"
 
         // Relacionamentos com outras classes
         public int UsuarioId { get; set; }
@@ -19,5 +19,12 @@ namespace ApiAgendamento.Models
 
         public int QuadraId { get; set; }
         public Quadra Quadra { get; set; } // Propriedade de navegação para a quadra agendada
+    }
+    public enum StatusAgendamento
+    {
+        PENDENTE,
+        APROVADO,
+        RECUSADO,
+        CANCELADO
     }
 }

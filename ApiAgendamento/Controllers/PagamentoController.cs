@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiAgendamento.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PagamentoController : ControllerBase
@@ -37,7 +37,7 @@ namespace ApiAgendamento.Controllers
         }
 
         // POST api/<PagamentoController>
-        [HttpPost]
+        /*[HttpPost]
         public IActionResult Post([FromBody] PagamentoDTO novoPagamento)
         {
             Pagamento pagamento = new Pagamento();
@@ -45,7 +45,7 @@ namespace ApiAgendamento.Controllers
             _context.Pagamentos.Add(pagamento);
             _context.SaveChanges();
             return Created("/pagamento", novoPagamento);
-        }
+        }*/
 
         // PUT api/<PagamentoController>/5
         [HttpPut("{id}")]
@@ -60,6 +60,37 @@ namespace ApiAgendamento.Controllers
             _context.Update(pagamento);
             _context.SaveChanges();
             return Ok("Pagamento atualizado com sucesso!");
+        }
+
+        [HttpPatch("{id}/alterarStatus/{acao}")]
+        public IActionResult ConfirmarPagamento([FromRoute] int id, [FromRoute] StatusPagamento acao)
+        {
+            var pagamento = _context.Pagamentos.FirstOrDefault(p => p.Id == id);
+            if (pagamento == null)
+            {
+                return BadRequest("Pagamento não encontrado!");
+            }
+            var agendamento = _context.Agendamentos.FirstOrDefault(a => a.Id == pagamento.AgendamentoId);
+            if (agendamento == null)
+            {
+                return BadRequest("Pagamento não encontrado!");
+            }
+            pagamento.Status = acao;
+            if (acao == StatusPagamento.APROVADO)
+            {
+                pagamento.DataPagamento = DateTime.Now;
+                agendamento.Status = StatusAgendamento.APROVADO;
+            } else if (acao == StatusPagamento.ESTORNADO)
+            {
+                agendamento.Status = StatusAgendamento.CANCELADO;
+            } else
+            {
+                agendamento.Status = StatusAgendamento.RECUSADO;
+            }
+            _context.Update(pagamento);
+            _context.Update(agendamento);
+            _context.SaveChanges();
+            return Ok("Pagamento confirmado com sucesso!");
         }
 
         // DELETE api/<PagamentoController>/5
