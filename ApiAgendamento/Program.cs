@@ -2,6 +2,8 @@ using ApiAgendamento;
 using ApiAgendamento.Data;
 using ApiAgendamento.Models;
 using ApiAgendamento.Models.DTO;
+using ApiAgendamento.Repositories.Implementations;
+using ApiAgendamento.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -33,25 +35,31 @@ builder.Services.AddAuthentication("Bearer")
             ValidateAudience = false,
             ValidateLifetime = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JWT:chave"] ?? "chavesecreta")),
+                Encoding.UTF8.GetBytes(builder.Configuration["JWT:ChaveSecreta"] ?? "chavesecreta")),
             ValidateIssuerSigningKey = true
         };
     });
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IAgendamentoRepository, AgendamentoRepository>();
+builder.Services.AddScoped<IPagamentoRepository, PagamentoRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Minha API", Version = "v1" });
     // Define esquema de segurança JWT
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
+        Description = "JWT Authorization header usando o esquema Bearer. \r\n\r\n " +
+                      "Digite 'Bearer' [espaço] e depois o token.\r\n\r\n " +
+                      "Exemplo: \"Bearer 12345abcdef\"",
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Insira o token JWT desta forma: Bearer {seu token}"
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
 
     // Exige que os endpoints usem esse esquema
@@ -64,9 +72,12 @@ builder.Services.AddSwaggerGen(c =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
-                }
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
             },
-            Array.Empty<string>()
+            new List<string>()
         }
     });
 });
