@@ -1,5 +1,7 @@
 ﻿using ApiAgendamento.Data;
 using ApiAgendamento.Models;
+using ApiAgendamento.Repositories.Inferfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,83 +12,11 @@ namespace ApiAgendamento.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UsuarioController : ControllerBase
+    public class UsuarioController : GenericController<Usuario>
     {
-        private readonly AppDbContext _context; 
-        public UsuarioController(AppDbContext context) 
+        public UsuarioController(IRepository<Usuario> repository, IMapper mapper) : base(repository, mapper) 
         {
-            _context = context;
-        }
-        // GET: api/<UsuarioController>
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok(_context.Usuarios.ToList().Select(u =>
-            {
-                return new
-                {
-                    u.Id,
-                    u.Nome,
-                    u.Email,
-                    u.Telefone,
-                    u.IsAdmin
-                };
-            }));
-        }
-
-        // GET api/<UsuarioController>/5
-        [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] int id)
-        {
-            return Ok(_context.Usuarios.Where(u => u.Id == id).ToList().Select(u =>
-            {
-                return new
-                {
-                    u.Id,
-                    u.Nome,
-                    u.Email,
-                    u.Telefone,
-                    u.IsAdmin
-                };
-            }));
-        }
-
-        // POST api/<UsuarioController>
-        [HttpPost]
-        public IActionResult Post([FromBody] Usuario novoUsuario)
-        {
-            novoUsuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(novoUsuario.SenhaHash);
-            _context.Usuarios.Add(novoUsuario);
-            _context.SaveChanges();
-            return Created("/usuario", novoUsuario);
-        }
-
-        // PUT api/<UsuarioController>/5
-        [HttpPut("{id}")]
-        public IActionResult Put([FromRoute] int id, [FromBody] Usuario usuarioAtualizado)
-        {
-            var usuario = _context.Usuarios.FirstOrDefault(u => u.Id == id);
-            if (usuario == null)
-            {
-                return BadRequest("Usuário não encontrado!");
-            }
-            _context.Update(usuario);
-            _context.SaveChanges();
-            return Ok("Usuário atualizado com sucesso!");
-        }
-
-        // DELETE api/<UsuarioController>/5
-        [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
-        {
-            var usuarioExiste = _context.Usuarios.FirstOrDefault(u => u.Id == id);
-            if (usuarioExiste is null)
-            {
-                return BadRequest("Usuário não existe!");
-            }
-            _context.Usuarios.Remove(usuarioExiste);
-            _context.SaveChanges();
-            return Ok("Usuário removido com sucesso!");
+            
         }
     }
 }

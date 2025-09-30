@@ -2,6 +2,8 @@ using ApiAgendamento;
 using ApiAgendamento.Data;
 using ApiAgendamento.Models;
 using ApiAgendamento.Models.DTO;
+using ApiAgendamento.Repositories.Implementations;
+using ApiAgendamento.Repositories.Inferfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -33,10 +35,12 @@ builder.Services.AddAuthentication("Bearer")
             ValidateAudience = false,
             ValidateLifetime = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JWT:chave"] ?? "chavesecreta")),
+                Encoding.UTF8.GetBytes(builder.Configuration["JWT:ChaveSecreta"] ?? "chavesecreta")),
             ValidateIssuerSigningKey = true
         };
     });
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
