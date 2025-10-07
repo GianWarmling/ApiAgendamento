@@ -40,5 +40,9 @@ namespace ApiAgendamento.Repositories.Implementations
             var dado = await _dbset.FindAsync(id);
             return dado;
         }
+        public async Task SaveChanges()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

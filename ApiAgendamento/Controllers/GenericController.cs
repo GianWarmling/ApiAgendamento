@@ -6,7 +6,7 @@ namespace ApiAgendamento.Controllers
 {
     [ApiController]
     [Route("/api/[controller]")]
-    public class GenericController<T> : ControllerBase where T : class
+    public class GenericController<T, TDto> : ControllerBase where T : class
     {
         private readonly IRepository<T> _repository;
         private readonly IMapper _mapper;
@@ -17,22 +17,27 @@ namespace ApiAgendamento.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public virtual async Task<IActionResult> Get()
         {
             return Ok(await _repository.GetAllAsync());
         }
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] T dados)
+        public virtual async Task<IActionResult> Post([FromBody] TDto dados)
         {
-           return Created(nameof(T),await _repository.AddAsync(dados));
+            var entity = _mapper.Map<T>(dados);
+            await _repository.AddAsync(entity);
+            await _repository.SaveChanges();
+            return Created(nameof(T),entity);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] T dados) 
+        public virtual async Task<IActionResult> Put([FromRoute] int id, [FromBody] T dados) 
         {
-            return Ok(await _repository.UpdateAsync(dados));
+            await _repository.UpdateAsync(dados);
+            await _repository.SaveChanges();
+            return Ok(dados);
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public virtual async Task<IActionResult> Delete([FromRoute] int id)
         {
             var dado = await _repository.GetByIdAsync(id);
             if(dado is null)
@@ -40,6 +45,7 @@ namespace ApiAgendamento.Controllers
                 return BadRequest("O REGISTRO NÃO EXISTE!");
             }
             await _repository.DeleteAsync(dado);
+            await _repository.SaveChanges();
             return Ok("Removido Com Sucesso!");
         }
     }

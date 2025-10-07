@@ -12,7 +12,7 @@ namespace ApiAgendamento.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UsuarioController : GenericController<Usuario>
+    public class UsuarioController : GenericController<Usuario, Usuario>
     {
         public UsuarioController(IRepository<Usuario> repository, IMapper mapper) : base(repository, mapper) 
         {

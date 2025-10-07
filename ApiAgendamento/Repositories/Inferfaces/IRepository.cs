@@ -7,5 +7,6 @@
         Task<T> UpdateAsync(T dados);
         Task DeleteAsync(T dado);
         Task<T?> GetByIdAsync(int id);
+        Task SaveChanges();
     }
 }

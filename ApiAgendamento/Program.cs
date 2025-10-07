@@ -41,6 +41,7 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IAgendamentoRepository,AgendamentoRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
