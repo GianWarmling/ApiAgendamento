@@ -54,7 +54,7 @@ namespace ApiAgendamento.Controllers
             };
             await _pagamentoRepository.AddAsync(pagamento);
             await _pagamentoRepository.SaveChanges();
-            return Created("/agendamento", agendamento);
+            return CreatedAtAction("/agendamento", agendamento);
         }
     }
 }
