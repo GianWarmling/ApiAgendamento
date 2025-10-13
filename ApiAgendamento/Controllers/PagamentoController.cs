@@ -1,6 +1,7 @@
 ﻿using ApiAgendamento.Data;
 using ApiAgendamento.Models;
 using ApiAgendamento.Models.DTO;
+using ApiAgendamento.Repositories.Implementations;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,65 +13,26 @@ namespace ApiAgendamento.Controllers
     //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class PagamentoController : ControllerBase
+    public class PagamentoController : GenericController<Pagamento, PagamentoDTO>
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-        public PagamentoController(AppDbContext context, IMapper mapper) 
+        private readonly IPagamentoRepository _pagamentoRepository;
+        private readonly IAgendamentoRepository _agendamentoRepo;
+        public PagamentoController(IPagamentoRepository pagamentoRepository, IMapper mapper, IAgendamentoRepository agendamentoRepo) : base(pagamentoRepository, mapper)
         {
-            _context = context;
-            _mapper = mapper;
+            _pagamentoRepository = pagamentoRepository;
+            _agendamentoRepo = agendamentoRepo;
         }
 
-        // GET: api/<PagamentoController>
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok(_context.Pagamentos.ToList());
-        }
-
-        // GET api/<PagamentoController>/5
-        [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] int id)
-        {
-            return Ok(_context.Pagamentos.Where(p => p.Id == id).FirstOrDefault());
-        }
-
-        // POST api/<PagamentoController>
-        /*[HttpPost]
-        public IActionResult Post([FromBody] PagamentoDTO novoPagamento)
-        {
-            Pagamento pagamento = new Pagamento();
-            _mapper.Map(novoPagamento, pagamento);
-            _context.Pagamentos.Add(pagamento);
-            _context.SaveChanges();
-            return Created("/pagamento", novoPagamento);
-        }*/
-
-        // PUT api/<PagamentoController>/5
-        [HttpPut("{id}")]
-        public IActionResult Put([FromRoute]int id, [FromBody] PagamentoDTO pagamentoAtualizado)
-        {
-            var pagamento = _context.Pagamentos.FirstOrDefault(p => p.Id == id);
-            if (pagamento == null)
-            {
-                return BadRequest("Pagamento não encontrado!");
-            }
-            _mapper.Map(pagamentoAtualizado, pagamento);
-            _context.Update(pagamento);
-            _context.SaveChanges();
-            return Ok("Pagamento atualizado com sucesso!");
-        }
 
         [HttpPatch("{id}/alterarStatus/{acao}")]
-        public IActionResult ConfirmarPagamento([FromRoute] int id, [FromRoute] StatusPagamento acao)
+        public async Task<IActionResult> ConfirmarPagamento([FromRoute] int id, [FromRoute] StatusPagamento acao)
         {
-            var pagamento = _context.Pagamentos.FirstOrDefault(p => p.Id == id);
+            var pagamento = await _pagamentoRepository.GetByIdAsync(id);
             if (pagamento == null)
             {
                 return BadRequest("Pagamento não encontrado!");
             }
-            var agendamento = _context.Agendamentos.FirstOrDefault(a => a.Id == pagamento.AgendamentoId);
+            var agendamento = await _agendamentoRepo.GetByIdAsync(pagamento.AgendamentoId);
             if (agendamento == null)
             {
                 return BadRequest("Pagamento não encontrado!");
@@ -87,24 +49,13 @@ namespace ApiAgendamento.Controllers
             {
                 agendamento.Status = StatusAgendamento.RECUSADO;
             }
-            _context.Update(pagamento);
-            _context.Update(agendamento);
-            _context.SaveChanges();
+            await _pagamentoRepository.UpdateAsync(pagamento);
+            await _pagamentoRepository.SaveChangesAsync();
+
+            await _agendamentoRepo.UpdateAsync(agendamento);
+            await _agendamentoRepo.SaveChangesAsync();
             return Ok("Pagamento confirmado com sucesso!");
         }
 
-        // DELETE api/<PagamentoController>/5
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var pagamento = _context.Pagamentos.FirstOrDefault(p => p.Id == id);
-            if (pagamento == null)
-            {
-                return BadRequest("Pagamento não encontrado!");
-            }
-            _context.Remove(pagamento);
-            _context.SaveChanges();
-            return Ok("Pagamento removido com sucesso!");
-        }
     }
 }
