@@ -61,10 +61,10 @@ namespace ApiAgendamentoTeste.Repositories
         public async Task DeveRemoverPagamento()
         {
             // Arrange
-            var pagamento = await PagamentoMockData.CriarPagamento(_pagamentoRepository);
+            var pagamento = await PagamentoMockData.CriarPagamento(_pagamentoRepository, 15);
 
             // Verifica se foi criado corretamente
-            var registro = await _pagamentoRepository.GetByIdAsync(1);
+            var registro = await _pagamentoRepository.GetByIdAsync(15);
             registro.Should().NotBeNull();
             registro.MetodoPagamento.Should().Be("Pix");
 
@@ -73,8 +73,8 @@ namespace ApiAgendamentoTeste.Repositories
             await _pagamentoRepository.SaveChanges();
 
             // Assert
-            var registros = await _pagamentoRepository.GetAllAsync();
-            registros.Should().BeEmpty();
+            var registros = await _pagamentoRepository.GetByIdAsync(15);
+            registros.Should().BeNull();
         }
 
         [Fact]

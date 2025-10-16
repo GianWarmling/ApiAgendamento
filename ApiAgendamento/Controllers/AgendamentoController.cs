@@ -39,8 +39,7 @@ namespace ApiAgendamento.Controllers
             TimeSpan diferenca = novoAgendamento.DataHoraFim - novoAgendamento.DataHoraInicio;
             var valorTotal = (decimal)diferenca.TotalHours * 100;
 
-            Agendamento agendamento = new Agendamento();
-            _mapper.Map(novoAgendamento, agendamento);
+            Agendamento agendamento = _mapper.Map<Agendamento>(novoAgendamento);
             agendamento.ValorTotal = valorTotal;
             agendamento.Status = StatusAgendamento.PENDENTE;
             await _agendamentoRepository.AddAsync(agendamento);
